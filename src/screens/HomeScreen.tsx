@@ -81,16 +81,16 @@ export default function HomeScreen({ navigation }: any) {
         />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
         {/* أزرار العمليات السريعة */}
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('AddAd')}>
             <Text style={styles.actionTitle}>أرسل إعلانك</Text>
             <Text style={styles.actionSub}>مجاناً وبثوانٍ</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCardAlt} onPress={() => navigation.navigate('Auth')}>
-            <Text style={styles.actionTitleAlt}>حسابي / دخول</Text>
-            <Text style={styles.actionSubAlt}>إدارة الإعلانات</Text>
+          <TouchableOpacity style={styles.actionCardAlt} onPress={() => navigation.navigate('Profile')}>
+            <Text style={styles.actionTitleAlt}>حسابي</Text>
+            <Text style={styles.actionSubAlt}>الملف الشخصي</Text>
           </TouchableOpacity>
         </View>
 
@@ -124,6 +124,7 @@ export default function HomeScreen({ navigation }: any) {
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.card}
+                activeOpacity={0.7}
                 onPress={() => navigation.navigate('AdDetails', { ad: item })}
               >
                 {item.status === 'sold' && (
@@ -154,7 +155,7 @@ export default function HomeScreen({ navigation }: any) {
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AddAd')}>
           <Text style={styles.navText}>+ إعلانك</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Auth')}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
           <Text style={styles.navText}>حسابي</Text>
         </TouchableOpacity>
       </View>
