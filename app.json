@@ -18,6 +18,11 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.sayarty.store"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "44b40570-f637-402c-94f9-dab8129c02ea"
+      }
     }
   }
 }
