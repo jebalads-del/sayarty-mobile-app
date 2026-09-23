@@ -1,75 +1,110 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 export default function SignUpScreen({ navigation }: any) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
+    setError('');
     if (!fullName || !email || !password) {
-      Alert.alert('تنبيه', 'يرجى تعبئة جميع الحقول المطلوبة');
+      setError('يرجى تعبئة جميع الحقول المطلوبة');
       return;
     }
-    Alert.alert('نجاح', 'تم إنشاء الحساب بنجاح!', [
-      { text: 'تسجيل الدخول', onPress: () => navigation.navigate('Auth') }
-    ]);
+
+    setLoading(true);
+    const trimmedEmail = email.trim().toLowerCase();
+
+    try {
+      // 1. إنشاء حساب في جدول المستخدمين المخصص
+      const { error: dbError } = await supabase.from('users').insert([
+        {
+          full_name: fullName,
+          email: trimmedEmail,
+          phone: phone,
+          password: password,
+          role: 'user'
+        }
+      ]);
+
+      if (dbError) {
+        // إذا فشل الجدول المخصص تجربة Supabase Auth
+        const { error: authError } = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password: password,
+        });
+
+        if (authError) {
+          setError(authError.message);
+          setLoading(false);
+          return;
+        }
+      }
+
+      setLoading(false);
+      Alert.alert('تم إنشاء الحساب', 'تم إنشاء حسابك بنجاح! يمكنك الآن تسجيل الدخول', [
+        { text: 'تسجيل الدخول', onPress: () => navigation.navigate('Auth') }
+      ]);
+
+    } catch (err: any) {
+      setLoading(false);
+      setError('حدث خطأ أثناء إنشاء الحساب');
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>إنشاء حساب جديد</Text>
-      <Text style={styles.subtitle}>أدخل بياناتك للانضمام إلى منصة سيارتي ستور</Text>
+      <View style={styles.card}>
+        <Text style={styles.title}>حساب جديد</Text>
+        <Text style={styles.subtitle}>أدخل بياناتك للانضمام إلى منصة سيارتي ستور</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="الاسم الكامل"
-        value={fullName}
-        onChangeText={setFullName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="البريد الإلكتروني"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="رقم الهاتف"
-        value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="كلمة السر"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+        {error ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>❌ {error}</Text>
+          </View>
+        ) : null}
 
-      <TouchableOpacity style={styles.btn} onPress={handleSignUp}>
-        <Text style={styles.btnText}>إنشاء الحساب</Text>
-      </TouchableOpacity>
+        <Text style={styles.label}>الاسم الكامل</Text>
+        <TextInput style={styles.input} placeholder="عبدالله الكويتي" value={fullName} onChangeText={setFullName} />
 
-      <TouchableOpacity onPress={() => navigation.navigate('Auth')} style={styles.linkBtn}>
-        <Text style={styles.linkText}>لديك حساب بالفعل؟ <Text style={styles.boldText}>تسجيل الدخول</Text></Text>
-      </TouchableOpacity>
+        <Text style={styles.label}>البريد الإلكتروني</Text>
+        <TextInput style={styles.input} placeholder="example@domain.com" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+
+        <Text style={styles.label}>رقم الهاتف</Text>
+        <TextInput style={styles.input} placeholder="90000000" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+
+        <Text style={styles.label}>كلمة المرور</Text>
+        <TextInput style={styles.input} placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
+
+        <TouchableOpacity style={styles.submitBtn} onPress={handleSignUp} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitBtnText}>إنشاء الحساب 🚀</Text>}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Auth')} style={styles.linkBtn}>
+          <Text style={styles.linkText}>لديك حساب بالفعل؟ <Text style={styles.boldText}>تسجيل الدخول</Text></Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, padding: 20, justifyContent: 'center', backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: '#0a192f', marginBottom: 6 },
+  container: { flexGrow: 1, backgroundColor: '#f8fafc', justifyContent: 'center', padding: 20 },
+  card: { backgroundColor: '#fff', borderRadius: 16, padding: 24, borderWidth: 1, borderColor: '#e2e8f0', elevation: 2 },
+  title: { fontSize: 22, fontWeight: 'bold', color: '#1e293b', textAlign: 'center', marginBottom: 6 },
   subtitle: { fontSize: 13, color: '#64748b', textAlign: 'center', marginBottom: 24 },
-  input: { borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, padding: 14, textAlign: 'right', marginBottom: 14, fontSize: 14 },
-  btn: { backgroundColor: '#16a34a', padding: 16, borderRadius: 10, alignItems: 'center', marginTop: 8 },
-  btnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  errorBox: { padding: 12, backgroundColor: '#fee2e2', borderRadius: 8, marginBottom: 16 },
+  errorText: { color: '#dc2626', fontSize: 13, fontWeight: '500', textAlign: 'center' },
+  label: { fontSize: 14, color: '#334155', fontWeight: '500', textAlign: 'right', marginBottom: 6 },
+  input: { borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 12, textAlign: 'right', marginBottom: 14, fontSize: 14 },
+  submitBtn: { backgroundColor: '#16a34a', padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 10 },
+  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   linkBtn: { marginTop: 20, alignItems: 'center' },
   linkText: { color: '#64748b', fontSize: 14 },
-  boldText: { color: '#0066cc', fontWeight: 'bold' }
+  boldText: { color: '#2563eb', fontWeight: 'bold' }
 });
