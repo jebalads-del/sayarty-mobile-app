@@ -1,22 +1,41 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from './src/screens/HomeScreen';
-import AddAdScreen from './src/screens/AddAdScreen';
-import AuthScreen from './src/screens/AuthScreen';
-import AdminScreen from './src/screens/AdminScreen';
-
-const Stack = createNativeStackNavigator();
+import { StyleSheet, View, StatusBar } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'سيارتي ستور' }} />
-        <Stack.Screen name="AddAd" component={AddAdScreen} options={{ title: 'إضافة إعلان جديد' }} />
-        <Stack.Screen name="Auth" component={AuthScreen} options={{ title: 'تسجيل الدخول' }} />
-        <Stack.Screen name="Admin" component={AdminScreen} options={{ title: 'لوحة التحكم' }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        {/* ضبط لون شريط الساعة ليتناسق مع الهيدر */}
+        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+        
+        {/* إضافة حماية لمنع قص الهيدر من الأعلى */}
+        <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+          <WebView
+            source={{ uri: 'https://sayarty.store' }}
+            style={styles.webview}
+            scalesPageToFit={true}
+            showsVerticalScrollIndicator={false}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+          />
+        </SafeAreaView>
+      </View>
+    </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0f172a', // لون خلفية الهيدر لمنع ظهور حواف بيضاء
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  webview: {
+    flex: 1,
+  },
+});
