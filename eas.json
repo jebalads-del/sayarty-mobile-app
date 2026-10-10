@@ -9,7 +9,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_DOCTOR_SKIP": "1"
+        "EXPO_NO_DOCTOR": "1",
+        "CI": "1"
       }
     }
   }
