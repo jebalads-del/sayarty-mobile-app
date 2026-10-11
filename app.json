@@ -31,11 +31,6 @@
       }
     },
     "owner": "jebal4567",
-    "doctor": {
-      "reactNativeDirectoryCheck": {
-        "enabled": false
-      }
-    },
     "experiments": {
       "baseUrl": ""
     }
